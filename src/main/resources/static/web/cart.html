@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<!--edge浏览器H5兼容设置-->
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<!--360浏览器H5兼容设置-->
+		<meta name="renderer" content="webkit" />
+		<title>网上商城</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!--导入核心文件-->
+		<script src="../bootstrap3/js/holder.js"></script>
+		<link href="../bootstrap3/css/bootstrap.css" rel="stylesheet" type="text/css">
+		<script src="../bootstrap3/jquery-1.9.1.min.js"></script>
+		<script src="../bootstrap3/js/bootstrap.js"></script>
+		<!-- 字体图标 -->
+		<link rel="stylesheet" href="../bootstrap3/font-awesome-4.7.0/css/font-awesome.css" />
+		<link rel="stylesheet" type="text/css" href="../css/layout.css" />
+		<link rel="stylesheet" type="text/css" href="../css/top.css" />
+		<script type="text/javascript">
+			function addNum(cid){
+				$.ajax({
+					url:"/cart/updateNum",
+					dataType:"JSON",
+					type:"GET",
+					data:"cid="+cid+"&add=1",
+					success:function (json) {
+						if (json.status==5006){
+							alert("库存不足！");
+						}
+						location.href = "cart.html";
+					}
+				})
+			}
+			function reduceNum(cid){
+				$.ajax({
+					url:"/cart/updateNum",
+					dataType:"JSON",
+					type:"GET",
+					data:"cid="+cid+"&add=0",
+					success:function () {
+						location.href = "cart.html";
+					}
+				})
+			}
+			function delCartItem(cid){
+				$.ajax({
+					url:"/cart/delete",
+					dataType:"JSON",
+					type:"GET",
+					data:"cid="+cid,
+					success:function () {
+						location.href = "cart.html";
+					}
+				})
+			}
+			function checkall(){
+				$(".ckitem").prop("checked",true);
+			}
+			$(function () {
+				$.ajax({
+					url:"/user/getUserFromSession",
+					type:"GET",
+					dataType:"JSON",
+					success:function (json) {
+						if (json.data==null){
+							$("#logout").hide();
+						}else {
+							$("#username").text(json.data.username);
+							$("#login").hide();
+						}
+					}
+				})
+				$("#logout").click(function () {
+					$.ajax({
+						url:"/user/logout",
+						type:"GET",
+						dataType:"JSON",
+						success:function () {
+							alert("注销成功！");
+						}
+					})
+				})
+				$.ajax({
+					url:"/cart/getCart",
+					type:"GET",
+					dataType:"JSON",
+					success:function (json) {
+						if (json.status==200){
+							let list = json.data;
+							for (let i = 0; i < list.length; i++) {
+								let cartItem = "\n<tr>" +
+										"\t\t\t\t\t\t\t\t\t\t<td>\n" +
+										"\t\t\t\t\t\t\t\t\t\t\t<input name='cids' value='#{cid}' type=\"checkbox\" onclick='checkIt(this)' class=\"ckitem\">\n" +
+										"\t\t\t\t\t\t\t\t\t\t</td>\n" +
+										"\t\t\t\t\t\t\t\t\t\t<td><img src=\"..#{image}collect.png\" class=\"img-responsive\"></td>\n" +
+										"\t\t\t\t\t\t\t\t\t\t<td>#{title}￥#{msg}</td>\n" +
+										"\t\t\t\t\t\t\t\t\t\t<td>¥<span id=\"goodsPrice#{cid}\">#{price}</span></td>\n" +
+										"\t\t\t\t\t\t\t\t\t\t<td>\n" +
+										"\t\t\t\t\t\t\t\t\t\t\t<input id='-#{cid}' type=\"button\" value=\"-\" class=\"num-btn\" onclick=\"reduceNum(#{cid})\">\n" +
+										"\t\t\t\t\t\t\t\t\t\t\t<input id=\"goodsCount#{cid}\" type=\"text\" size=\"2\" readonly=\"readonly\" class=\"num-text\" value=\"#{num}\">\n" +
+										"\t\t\t\t\t\t\t\t\t\t\t<input id='+{cid}' class=\"num-btn\" type=\"button\" value=\"+\" onclick=\"addNum(#{cid})\">\n" +
+										"\t\t\t\t\t\t\t\t\t\t</td>\n" +
+										"\t\t\t\t\t\t\t\t\t\t<td><span id=\"goodsCast#{cid}\">￥#{totalPrice}</span></td>\n" +
+										"\t\t\t\t\t\t\t\t\t\t<td>\n" +
+										"\t\t\t\t\t\t\t\t\t\t\t<input type=\"button\" onclick=\"delCartItem(#{cid})\" class=\"cart-del btn btn-default btn-xs\" value=\"删除\">\n" +
+										"\t\t\t\t\t\t\t\t\t\t</td>\n" +
+										"\t\t\t\t\t\t\t\t\t</tr>";
+
+								cartItem = cartItem.replace(/#{cid}/g,list[i].cid);
+								cartItem = cartItem.replace(/#{image}/g,list[i].image);
+								cartItem = cartItem.replace(/#{title}/g,list[i].title);
+								cartItem = cartItem.replace(/#{msg}/g,list[i].realPrice);
+								cartItem = cartItem.replace(/#{num}/g,list[i].num);
+								cartItem = cartItem.replace(/#{price}/g,list[i].price);
+								cartItem = cartItem.replace(/#{totalPrice}/g,list[i].price*list[i].num);
+
+								$("#cart-list").append(cartItem);
+							}
+
+						}
+
+					},
+					error:function (xhr) {
+						alert("出现未知错误！"+xhr.message);
+					}
+				})
+
+			})
+		</script>
+		<link rel="stylesheet" type="text/css" href="../css/footer.css" />
+		<link rel="stylesheet" type="text/css" href="../css/cart.css" />
+<!--		<script src="../js/cart.js" type="text/javascript" charset="utf-8"></script>-->
+	</head>
+
+	<body>
+		<!--头部-->
+		<header class="header">
+			<!--网上商城logo-->
+			<div class="row">
+				<div class="col-md-3">
+					<a href="index.html">
+						<h1>网上商城</h1>
+					</a>
+				</div>
+				<!--快捷选项-->
+				<div class="col-md-9 top-item">
+					<ul class="list-inline pull-right">
+
+						<li><a href="orders.html"><span class="fa fa-file-text"></span>&nbsp;订单</a></li>
+						<li class="li-split">|</li>
+						<li><a href="cart.html"><span class="fa fa-cart-plus"></span>&nbsp;购物车</a></li>
+						<li class="li-split">|</li>
+						<li>
+							<!--下列列表按钮 ：管理-->
+							<div class="btn-group">
+								<button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+									<span id="top-dropdown-btn"><span class="fa fa-gears"></span>&nbsp;管理 <span class="caret"></span></span>
+								</button>
+								<ul class="dropdown-menu top-dropdown-ul" role="menu">
+
+									<li><a href="address.html">收货管理	</a></li>
+								</ul>
+							</div>
+						</li>
+						<li class="li-split">|</li>
+						<li>							<a id="login" href="login.html">登录</a>
+							<span id="username" class="fa fa-user"></span>
+							<a id="logout" href="">注销</a></li>
+					</ul>
+				</div>
+			</div>
+		</header>
+		<!--导航 -->
+		<!--分割导航和顶部-->
+		<div class="row top-nav">
+
+			<div class="col-md-6">
+				<form action="search.html" class="form-inline pull-right" role="form">
+					<div class="form-group">
+						<input type="hidden" name="page" value=1>
+						<input type="text" class="form-control" id="search" name="keyWord" placeholder="请输入商品名称进行搜索">
+					</div>
+					<button type="submit" class="btn btn-default btn-sm"><span class="fa fa-search"></span></button>
+				</form>
+			</div>
+		</div>
+		<!--头部结束-->
+		<!--导航结束-->
+		<div class="container">
+			<div class="col-md-offset-1 col-md-10">
+				<div class="panel panel-primary">
+					<div class="panel-heading">
+						<p class="panel-title"><span class="fa fa-shopping-cart"></span> 购物车</p>
+					</div>
+					<div class="panel-body">
+						<form action="orderConfirm.html" role="form">
+							<!--购物车表格开始-->
+							<table class="cart-table" width="100%">
+								<thead>
+									<tr>
+										<th width="8%">
+											<input type="checkbox" class="ckall" onclick="checkall()" />全选</th>
+										<th width="110"></th>
+										<th width="29%">商品</th>
+										<th width="11%">单价</th>
+										<th width="15%">数量</th>
+										<th width="11%">金额</th>
+										<th>操作</th>
+									</tr>
+								</thead>
+								<tbody id="cart-list" class="cart-body">
+
+								</tbody>
+							</table>
+<!--							<div class="total-bar">-->
+<!--								<a href="javascript:selDelCart()" class="cart-del-sel btn btn-default btn-xs">删除所选商品</a>-->
+<!--								<span class="pull-right">已选商品-->
+<!--								<span id="selectCount">0</span>件 总价¥-->
+<!--								<span id="selectTotal">0</span>元-->
+<!--								</span>-->
+<!--							</div>-->
+							<div>
+								<span class="pull-right">
+								<input type="submit" value="  结  算  " class="btn btn-primary btn-lg link-account" id="submit_btn"/>
+							</span>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--页脚开始-->
+		<div class="clearfix"></div>
+		<footer class="footer">
+			<!-- 品质保障，私人定制等-->
+			<div class="text-center rights container">
+				<div class="col-md-offset-2 col-md-2">
+					<span class="fa fa-thumbs-o-up"></span>
+					<p>品质保障</p>
+				</div>
+				<div class="col-md-2">
+					<span class="fa fa-address-card-o"></span>
+					<p>私人订制</p>
+				</div>
+				<div class="col-md-2">
+					<span class="fa fa-graduation-cap"></span>
+					<p>学生特供</p>
+				</div>
+				<div class="col-md-2">
+					<span class="fa fa-bitcoin"></span>
+					<p>专属特权</p>
+				</div>
+			</div>
+			<!--联系我们、下载客户端等-->
+
+			<!-- 页面底部-备案号 #footer -->
+			<div class="col-md-12 text-center bottom">
+				Copyright © 2022 dnsc.cn All Rights Reserved 京ICP备08963888号-45 <a target="_blank" style="font-size: 12px" href="http://www.dnsc.cn/">圆心科技集团有限公司</a> 版权所有
+			</div>
+		</footer>
+		<!--页脚结束-->
+		<script type="text/javascript">
+			$(function() {
+				//返回链接
+				$(".link-account").click(function() {
+					location.href = "orderConfirm.html";
+				})
+			})
+		</script>
+	</body>
+
+</html>

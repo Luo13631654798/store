@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lyc.mapper.UserMapper">
+    <insert id="insert" parameterType="com.lyc.domain.User">
+        insert into user(username,password,role) values (#{username},#{password},#{role})
+    </insert>
+
+    <select id="findByUsername" resultType="com.lyc.domain.User">
+        select * from user where username=#{username} and role=#{role}
+    </select>
+
+    <select id="findUserNum" resultType="java.lang.Integer">
+        select MAX(id) from user;
+    </select>
+    <select id="findAllSeller" resultType="com.lyc.domain.User">
+        select * from user where role=0
+    </select>
+
+    <delete id="deleteUserById">
+        delete from user where id=#{id}
+    </delete>
+
+    <update id="resetPasswordById">
+        update user set password="12345" where id=#{id}
+    </update>
+
+    <insert id="insertLog" parameterType="com.lyc.domain.UserLog">
+        insert into t_user_log values (#{uid},#{logTime},#{ip},#{status});
+    </insert>
+
+    <insert id="insertUserStopProductLog" parameterType="com.lyc.domain.UserStopProductLog">
+        insert into t_user_stop_product values (#{uid},#{pid},#{second},#{date});
+    </insert>
+    
+    <insert id="insertSellerLog" parameterType="com.lyc.domain.SellerLog">
+        insert into t_seller_log values (#{uid},#{ip},#{username},#{date},#{operation});
+    </insert>
+    <select id="findAllUserId" resultType="java.lang.Integer">
+        select id from user;
+    </select>
+
+    <resultMap id="UserCategoryCustomMap" type="com.lyc.domain.VO.UserCategoryCustomVO">
+        <id column="c_id" property="category_id"/>
+        <id column="total_num" property="consumption"/>
+        <id column="u_id" property="u_id"/>
+    </resultMap>
+    <select id="findUserCategoryCustom" resultMap="UserCategoryCustomMap">
+         SELECT o.uid as u_id,p.category_id AS c_id,SUM(o_i.num*o_i.price) AS total_num FROM t_order o,t_order_item o_i,t_product p WHERE o.oid = o_i.oid AND p.id=o_i.pid GROUP BY o.uid,p.category_id;
+    </select>
+
+    <resultMap id="SellerAchievementMap" type="com.lyc.domain.VO.SellerAchievementVO">
+        <result column="seller_id" property="uid"/>
+        <result column="total_num" property="totalNum"/>
+        <result column="total_price" property="totalPrice"/>
+    </resultMap>
+    <select id="findSellerAchievement" resultMap="SellerAchievementMap">
+        SELECT seller_id,SUM(o_i.num) AS total_num,SUM(o_i.price*o_i.num) AS total_price FROM t_order o,t_order_item o_i,product_category c,t_product p WHERE o.oid=o_i.oid AND o_i.pid=p.id AND p.category_id=c.id AND c.seller_id=#{uid} AND TO_DAYS(NOW())-TO_DAYS(o.order_time) &lt;#{time};
+    </select>
+
+    <insert id="insertOperationLog">
+        insert into t_operation_log values (#{uid},#{time},#{operation},#{ip},#{username})
+    </insert>
+</mapper>

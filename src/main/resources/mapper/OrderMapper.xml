@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lyc.mapper.OrderMapper">
+    <insert id="insertOrder" parameterType="com.lyc.domain.Order">
+        INSERT INTO t_order (uid, recv_name, recv_phone, recv_province, recv_city, recv_area,recv_address,total_price,status, order_time, pay_time) VALUES (#{uid}, #{recvName}, #{recvPhone}, #{recvProvince}, #{recvCity}, #{recvArea},#{recvAddress}, #{totalPrice}, #{status}, #{orderTime}, #{payTime})
+    </insert>
+
+    <insert id="insertOrderItem" parameterType="com.lyc.domain.OrderItem">
+        INSERT INTO
+        t_order_item (oid, pid, title, image, price, num)
+        VALUES (#{oid}, #{pid}, #{title}, #{image}, #{price}, #{num})
+    </insert>
+
+    <select id="findLastOidByUid" resultType="java.lang.Integer">
+        select oid from t_order where uid=#{uid} order by oid DESC limit 0,1
+    </select>
+    
+    <select id="findByUid" resultType="com.lyc.domain.Order">
+        select * from t_order where uid=#{uid};
+    </select>
+
+    <select id="findByOid" resultType="com.lyc.domain.OrderItem">
+        select * from t_order_item where oid=#{oid};
+    </select>
+
+    <select id="findOneByOid" resultType="com.lyc.domain.Order">
+        select * from t_order where oid = #{oid}
+    </select>
+
+    <resultMap id="pidAndNumMap" type="com.lyc.domain.VO.PidAndNumVO">
+        <result column="num" property="num"/>
+        <result column="pid" property="pid"/>
+    </resultMap>
+
+    <select id="findOrderItemPidByUid" resultMap="pidAndNumMap">
+        select pid,num from t_order_item oi,t_order o where oi.oid = o.oid and uid=#{uid};
+    </select>
+
+    <resultMap id="ProductSalesMap" type="com.lyc.domain.VO.ProductSalesVO">
+        <result column="title" property="title"/>
+        <result column="sales" property="sales"/>
+        <result column="price" property="price"/>
+        <result column="total" property="total"/>
+    </resultMap>
+    <select id="findProductSalesByTimeAndCategory" resultMap="ProductSalesMap">
+        SELECT o_i.title AS title, SUM(o_i.num) AS sales,SUM(o_i.price)/COUNT(*) AS price,SUM(o_i.num)*SUM(o_i.price)/COUNT(*) total FROM t_order o,t_order_item o_i,t_product p WHERE o.oid=o_i.id AND o_i.pid=p.id AND p.category_id=#{cid} AND TO_DAYS(NOW())-TO_DAYS(o.order_time) &lt;#{time} GROUP BY o_i.title;
+    </select>
+
+</mapper>

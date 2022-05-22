@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lyc.mapper.ProductMapper">
+    <resultMap id="ProductCategory" type="com.lyc.domain.ProductCategory">
+        <id column="id" property="id"></id>
+        <result column="category_name" property="category_name"></result>
+        <result column="seller_id" property="seller_id"></result>
+    </resultMap>
+
+    <select id="getProductCategoryBySellerId" resultMap="ProductCategory">
+        select * from product_category where seller_id=#{id}
+    </select>
+
+    <update id="deleteProductCategorySeller">
+        update product_category set seller_id=null where id=#{id}
+    </update>
+
+    <select id="findNullSellerProductCategory" resultType="String">
+        select category_name from product_category where seller_id is null
+    </select>
+
+    <update id="addProductCategorySeller">
+        update product_category set seller_id=#{sid} where category_name=#{pid}
+    </update>
+
+    <select id="findProductByKeyWord" resultType="com.lyc.domain.Product">
+        select * from t_product where num>0 and title like '%${keyWord}%' limit #{offset},#{pageSize}
+    </select>
+
+    <select id="findProductById" resultType="com.lyc.domain.Product">
+        select * from t_product where id=#{id}
+    </select>
+
+    <select id="findProductByCategoryId" resultType="com.lyc.domain.Product">
+        select * from t_product where num>0 and category_id=#{categoryId} limit #{offset},#{pageSize}
+    </select>
+
+    <select id="findByCategoryId" resultType="com.lyc.domain.Product">
+        select * from t_product where num>0 and category_id=#{categoryId}
+    </select>
+    <delete id="deleteByPid">
+        delete from t_product where id=#{pid}
+    </delete>
+
+    <insert id="insert" parameterType="com.lyc.domain.Product">
+        INSERT INTO t_product(category_id,item_type,title,sell_point,price,num,image,STATUS,priority) VALUES (#{categoryId},#{itemType},#{title},#{sellPoint},#{price},#{num},#{image},#{status},#{priority});
+    </insert>
+    
+    <update id="update" parameterType="com.lyc.domain.Product">
+        update t_product set title = #{title},price = #{price},num = #{num},category_id = #{categoryId} where id=#{id};
+    </update>
+
+    <select id="findCategoryName" resultType="java.lang.String">
+        select category_name from product_category where id=#{cid}
+    </select>
+
+    <resultMap id="UsernameProductNameDateMap" type="com.lyc.domain.VO.UsernameProductDateVO">
+        <result column="username" property="username"/>
+        <result column="date" property="date"/>
+        <result column="title" property="productName"/>
+    </resultMap>
+
+    <resultMap id="UsernameProductNameTimeMap" type="com.lyc.domain.VO.UsernameProductDateVO">
+        <result column="username" property="username"/>
+        <result column="order_time" property="date"/>
+        <result column="title" property="productName"/>
+    </resultMap>
+    <select id="findUserStopLogByCategoryId" resultMap="UsernameProductNameDateMap">
+        SELECT u.username,u_p.date,p.title FROM t_user_stop_product AS u_p,t_product AS p,user AS u WHERE u_p.pid=p.id AND u_p.uid=u.id AND p.category_id=#{cid};
+    </select>
+    <select id="findOrderItemLogByCategoryId" resultMap="UsernameProductNameTimeMap">
+SELECT u.username,o.order_time,p.title FROM t_order AS o,t_order_item AS o_i,t_product AS p,user AS u WHERE p.category_id=#{cid} AND o.oid=o_i.oid AND u.id=o.uid AND p.id=o_i.pid;
+    </select>
+
+
+    <select id="findAllId" resultType="java.lang.Integer">
+        select id from t_product order by id;
+    </select>
+
+    <select id="findPidByUid" resultType="java.lang.Integer">
+        select pid from t_user_stop_product where uid=#{uid};
+    </select>
+
+    <update id="updateProductScore">
+        update t_product_score set score = score+#{num} where pid = #{pid};
+    </update>
+
+    <select id="findHotProduct" resultType="java.lang.Integer">
+        SELECT pid FROM t_product_score ORDER BY score DESC LIMIT 0,10;
+    </select>
+
+    <insert id="insertExceptionLog">
+        insert into t_exception_log(uid,pid,exception,time) values (#{uid},#{pid},#{exception},#{time});
+    </insert>
+
+    <resultMap id="SalesExceptionMap" type="com.lyc.domain.VO.SalesExceptionVO">
+        <result column="uid" property="uid"/>
+        <result column="pid" property="pid"/>
+        <result column="exception" property="exception"/>
+        <result column="time" property="time"/>
+    </resultMap>
+    <select id="findAllException" resultMap="SalesExceptionMap">
+        select * from t_exception_log;
+    </select>
+    
+    <resultMap id="ProductStopNumMap" type="com.lyc.domain.VO.ProductStopNumVO">
+        <result column="pid" property="pid"/>
+        <result column="total" property="num"/>
+    </resultMap>
+    <select id="findProductStopNum" resultMap="ProductStopNumMap">
+        SELECT pid,COUNT(*) AS total FROM t_user_stop_product WHERE TO_DAYS(NOW())-TO_DAYS(DATE) &lt;7 GROUP BY pid;
+    </select>
+    <select id="findProductBoughtNum" resultMap="ProductStopNumMap">
+        SELECT o_i.pid,SUM(o_i.num) AS total FROM t_order_item o_i,t_order o WHERE o.oid=o_i.oid AND TO_DAYS(NOW())-TO_DAYS(order_time)&lt;7 GROUP BY o_i.pid;
+    </select>
+</mapper>

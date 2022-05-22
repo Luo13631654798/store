@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>销售员管理</title>
+    <base href="">
+<!--    <link type="text/css" rel="stylesheet" href="../../static/css/style.css" >-->
+<!--    <link type="text/css" rel="stylesheet" href="/static/web/static/css/style.css" >-->
+    <link type="text/css" rel="stylesheet" href="../../static/css/style.css" >
+
+    <script src="../../../bootstrap3/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $.ajax({
+                url: "/user/queryAllSeller",
+                dataType: "JSON",
+                type: "GET",
+                success: function (json) {
+                    let list = json.data;
+                    for (let i = 0;i<list.length;i++){
+                        // alert(list[i].id);
+                        // alert(list[i].username);
+
+                        let tr = "        <tr>\n" +
+                            "            <td class='id'>销售员#{id}</td>\n" +
+                            "            <td><a class='getClass' href=\"../manager/seller_catagory_manage.html?id=#{id}&username=#{username}&time=7\">#{username}</a></td>\n" +
+                            "            <td><a class='deleteClass' href=\"/user/deleteSeller?id=#{id}\">删除</a></td>\n" +
+                            "            <td><a class='resetPassword' href=\"/user/resetPassword?id=#{id}\">重置密码</a></td>\n" +
+                            "        </tr>";
+                        tr = tr.replace(/#{id}/g,list[i].id);
+                        tr = tr.replace(/#{username}/g,list[i].username);
+                        $("#sellerTable").append(tr);
+
+
+                    }
+                    $("#sellerTable").append(                    "        <tr>\n" +
+                        "            <td></td>\n" +
+                        "            <td></td>\n" +
+                        "            <td><a href=\"/web/pages/manager/seller_edit.html\">添加销售员</a></td>\n" +
+                        "        </tr>");
+
+
+                    $("a.resetPassword").click(function () {
+                        return confirm("确认重置【"+$(this).parent().parent().find("td:first").next().text()+"】的密码为12345吗");
+                    })
+                    $("a.deleteClass").click(function () {
+                        return confirm("确认删除【"+$(this).parent().parent().find("td:first").next().text()+"】吗");
+                    })
+                }
+            })
+
+
+
+        })
+    </script>
+</head>
+<body>
+
+<div id="header">
+    <img class="logo_img" alt="" src="../../static/img/logo.gif" >
+    <span class="wel_word">销售员管理系统</span>
+    <div>
+        <a href="sales_exception.html">查看销售异常</a>
+        <a href="../../index.html">返回商城</a>
+    </div>
+</div>
+
+<div id="main">
+    <table class="list" id="sellerTable">
+        <tr>
+            <td class="123">ID</td>
+            <td>用户名</td>
+            <td colspan="2">操作</td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

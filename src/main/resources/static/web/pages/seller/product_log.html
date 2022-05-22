@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>商品日志</title>
+<link type="text/css" rel="stylesheet" href="../../static/css/style.css" >
+<script src="../../../bootstrap3/jquery-1.9.1.min.js"></script>
+<script type="text/javascript">
+	$.getUrlParam = function (name) {
+		let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+		let r = window.location.search.substr(1).match(reg);
+		if (r != null) return decodeURI(r[2]); return null;
+	}
+
+	function delproduct(pid){
+		if (confirm("确认删除此条数据吗？")){
+			$.ajax({
+				url:"/product/deleteByPid",
+				type:"GET",
+				dataType:"JSON",
+				data:'pid='+pid,
+				success:function (json) {
+					if (json.status==200){
+						alert("删除成功！");
+						history.go(0);
+					}
+					else {
+						alert("删除失败！");
+					}
+				}
+			})
+		}
+
+	}
+	$(function () {
+
+		$.ajax({
+			url:"/product/userProductLog",
+			type:"GET",
+			dataType:"JSON",
+			data:"cid="+$.getUrlParam("categoryId")+"&flag="+$.getUrlParam("flag"),
+			success:function (json) {
+				let list = json.data;
+				let logname;
+				if ($.getUrlParam("flag")==0){
+					logname = '浏览日志';
+				}else {
+					logname = '销售日志';
+				}
+				$("#category_name").html(logname);
+
+				for (let i = 0; i < list.length; i++) {
+					let tr = "\t\t\t<tr>\n" +
+							"\t\t\t\t<td>#{username}</td>\n" +
+							"\t\t\t\t<td>#{productName}</td>\n" +
+							"\t\t\t\t<td>#{date}</td>\n" +
+							"\t\t\t</tr>\t"
+					tr = tr.replace(/#{username}/g,list[i].username).replace(/#{productName}/g,list[i].productName).replace(/#{date}/g,list[i].date);
+					$("#product_list").append(tr);
+				}
+			}
+		})
+	})
+</script>
+</head>
+<body>
+	
+	<div id="header">
+			<img class="logo_img" alt="" src="../../static/img/logo.gif" >
+			<span class="wel_word" id="category_name">商品管理系统</span>
+			<div>
+				<a href="../../index.html">返回商城</a>
+				<a href="seller_catagory.html">返回上一级</a>
+
+			</div>
+	</div>
+	
+	<div id="main">
+		<table id="product_list">
+			<tr>
+				<td>用户名</td>
+				<td>商品名称</td>
+				<td>时间</td>
+			</tr>		
+
+
+		</table>
+	</div>
+	
+	<div id="bottom">
+		<span>
+
+		</span>
+	</div>
+</body>
+</html>

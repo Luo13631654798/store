@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<!--edge浏览器H5兼容设置-->
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<!--360浏览器H5兼容设置-->
+		<meta name="renderer" content="webkit" />
+		<title>网上商城</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<!--导入核心文件-->
+		<script src="../bootstrap3/js/holder.js"></script>
+		<link href="../bootstrap3/css/bootstrap.css" rel="stylesheet" type="text/css">
+		<script src="../bootstrap3/jquery-1.9.1.min.js"></script>
+		<script src="../bootstrap3/js/bootstrap.js"></script>
+		<!-- 字体图标 -->
+		<link rel="stylesheet" href="../bootstrap3/font-awesome-4.7.0/css/font-awesome.css" />
+		<link rel="stylesheet" type="text/css" href="../css/layout.css" />
+		<link rel="stylesheet" type="text/css" href="../css/top.css" />
+		<link rel="stylesheet" type="text/css" href="../css/footer.css" />
+		<link rel="stylesheet" type="text/css" href="../css/orderInfo.css" />
+		<link rel="stylesheet" type="text/css" href="../css/order.css" />
+
+		<script type="text/javascript">
+			$(function () {
+
+				$.ajax({
+					url:"/user/getUserFromSession",
+					type:"GET",
+					dataType:"JSON",
+					success:function (json) {
+						if (json.data==null){
+							$("#logout").hide();
+						}else {
+							$("#username").text(json.data.username);
+							$("#login").hide();
+						}
+					}
+				})
+				$("#logout").click(function () {
+					$.ajax({
+						url:"/user/logout",
+						type:"GET",
+						dataType:"JSON",
+						success:function () {
+							alert("注销成功！");
+						}
+					})
+				})
+
+				$.ajax({
+					url:"/order/getOne",
+					type:"GET",
+					data: location.search.substr(1),
+					dataType:"JSON",
+					success:function (json) {
+						let order = json.data;
+						$("#oid").append("订单号："+order.oid);
+						$("#namezipphone").append("收货人姓名："+order.recvName+",  联系电话："+order.recvPhone);
+						$("#address").append("收货地址："+order.recvProvince+order.recvCity+order.recvArea+order.recvAddress);
+						$("#oiddatename").append("订单号："+order.oid+",  下单时间："+order.orderTime+",  收货人："+order.recvName);
+						$("#totalprice").append("订单总金额："+order.totalPrice);
+					}
+				})
+
+				$.ajax({
+					url:"/order/getOrderItem",
+					type:"GET",
+					dataType:"JSON",
+					data:location.search.substr(1),
+					success:function (json) {
+						let orderItemList = json.data;
+						for (let i = 0; i < orderItemList.length; i++) {
+							let orderItem =
+									"\t\t\t\t\t\t\t\t<tr>\n" +
+									"\t\t\t\t\t\t\t\t\t<td><img src=\"..#{image}collect.png\" class=\"img-responsive\" /></td>\n" +
+									"\t\t\t\t\t\t\t\t\t<td>#{title}</td>\n" +
+									"\t\t\t\t\t\t\t\t\t<td>¥<span>#{price}</span></td>\n" +
+									"\t\t\t\t\t\t\t\t\t<td>#{num}件</td>\n" +
+									"\t\t\t\t\t\t\t\t\t<td>¥<span>#{totalprice}</span></td>\n" +
+									"\t\t\t\t\t\t\t\t</tr>\n" ;
+
+							orderItem = orderItem.replace(/#{image}/g,orderItemList[i].image);
+							orderItem = orderItem.replace(/#{title}/g,orderItemList[i].title);
+							orderItem = orderItem.replace(/#{price}/g,orderItemList[i].price);
+							orderItem = orderItem.replace(/#{num}/g,orderItemList[i].num);
+							orderItem = orderItem.replace(/#{totalprice}/g,orderItemList[i].price*orderItemList[i].num);
+
+							$("#orderItem").append(orderItem);
+						}
+					}
+				})
+
+
+			})
+		</script>
+	</head>
+
+	<body>
+		<!--头部-->
+		<header class="header">
+			<!--网上商城logo-->
+			<div class="row">
+				<div class="col-md-3">
+					<a href="index.html">
+						<h1>网上商城</h1>
+					</a>
+				</div>
+				<!--快捷选项-->
+				<div class="col-md-9 top-item">
+					<ul class="list-inline pull-right">
+
+						<li><a href="orders.html"><span class="fa fa-file-text"></span>&nbsp;订单</a></li>
+						<li class="li-split">|</li>
+						<li><a href="cart.html"><span class="fa fa-cart-plus"></span>&nbsp;购物车</a></li>
+						<li class="li-split">|</li>
+						<li>
+							<!--下列列表按钮 ：管理-->
+							<div class="btn-group">
+								<button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+									<span id="top-dropdown-btn"><span class="fa fa-gears"></span>&nbsp;管理 <span class="caret"></span></span>
+								</button>
+								<ul class="dropdown-menu top-dropdown-ul" role="menu">
+
+									<li><a href="address.html">收货管理	</a></li>
+								</ul>
+							</div>
+						</li>
+						<li class="li-split">|</li>
+						<li>							<a id="login" href="login.html">登录</a>
+							<span id="username" class="fa fa-user"></span>
+							<a id="logout" href="">注销</a></li>
+					</ul>
+				</div>
+			</div>
+		</header>
+		<!--导航 -->
+		<!--分割导航和顶部-->
+		<div class="row top-nav">
+
+			<div class="col-md-6">
+				<form action="search.html" class="form-inline pull-right" role="form">
+					<div class="form-group">
+						<input type="hidden" name="page" value=1>
+						<input type="text" class="form-control" id="search" name="keyWord" placeholder="请输入商品名称进行搜索">
+					</div>
+					<button type="submit" class="btn btn-default btn-sm"><span class="fa fa-search"></span></button>
+				</form>
+			</div>
+		</div>
+		<!--头部结束-->
+		<!--导航结束-->
+		<!--页面主体开始-->
+		<div class="container">
+			<div class="col-md-offset-1 col-md-10">
+				<h1>订单详情：</h1>
+				<div id="oid" class="state-bar">
+				</div>
+
+				<h2 class="page-header">地址详情：</h2>
+				<p id="namezipphone"></p>
+				<p id="address"></p>
+
+				<h2 class="page-header">商品详情：</h2>
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 id="oiddatename" class="panel-title">
+
+            		</h3>
+					</div>
+					<div class="panel-body">
+						<table class="orders-table">
+							<thead>
+								<tr>
+									<th width="15%"></th>
+									<th width="35%">商品</th>
+									<th width="15%">单价</th>
+									<th width="15%">数量</th>
+									<th width="20%">小计</th>
+								</tr>
+							</thead>
+							<tbody id="orderItem" class="orders-body">
+
+							</tbody>
+						</table>
+						<div>
+							<span id="totalprice" class="pull-right"></span>
+						</div>
+					</div>
+				</div>
+				<a href="orders.html">返回</a>
+			</div>
+		</div>
+		<!--页脚开始-->
+		<div class="clearfix"></div>
+		<footer class="footer">
+			<!-- 品质保障，私人定制等-->
+			<div class="text-center rights container">
+				<div class="col-md-offset-2 col-md-2">
+					<span class="fa fa-thumbs-o-up"></span>
+					<p>品质保障</p>
+				</div>
+				<div class="col-md-2">
+					<span class="fa fa-address-card-o"></span>
+					<p>私人订制</p>
+				</div>
+				<div class="col-md-2">
+					<span class="fa fa-graduation-cap"></span>
+					<p>学生特供</p>
+				</div>
+				<div class="col-md-2">
+					<span class="fa fa-bitcoin"></span>
+					<p>专属特权</p>
+				</div>
+			</div>
+			<!--联系我们、下载客户端等-->
+
+			<!-- 页面底部-备案号 #footer -->
+</footer>
+		<!--页脚结束-->
+	</body>
+
+</html>

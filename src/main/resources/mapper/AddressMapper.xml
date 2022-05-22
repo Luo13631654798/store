@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lyc.mapper.AddressMapper">
+    <resultMap id="AddressEntityMap" type="com.lyc.domain.Address">
+        <id column="aid" property="aid"/>
+        <result column="province_code" property="provinceCode"/>
+        <result column="province_name" property="provinceName"/>
+        <result column="city_code" property="cityCode"/>
+        <result column="city_name" property="cityName"/>
+        <result column="area_code" property="areaCode"/>
+        <result column="area_name" property="areaName"/>
+        <result column="is_default" property="isDefault"/>
+    </resultMap>
+    <select id="countByUid" resultType="java.lang.Integer">
+        select count(*) from t_address where uid=#{id}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="aid">
+        INSERT INTO t_address (
+            uid, name, province_name, province_code, city_name, city_code, area_name, area_code, zip,
+            address, phone, tel, tag, is_default
+        ) VALUES (
+            #{uid}, #{name}, #{provinceName}, #{provinceCode}, #{cityName}, #{cityCode}, #{areaName},
+            #{areaCode}, #{zip}, #{address}, #{phone}, #{tel}, #{tag}, #{isDefault}
+        )
+    </insert>
+
+    <select id="findByUid" resultType="com.lyc.domain.Address">
+        select * from t_address where uid=#{id} order by is_default DESC;
+    </select>
+
+    <select id="findByAid" resultType="com.lyc.domain.Address">
+        select * from t_address where aid=#{aid};
+    </select>
+    <update id="setNonDefaultByUid">
+        update t_address set is_default = 0 where uid=#{uid};
+    </update>
+
+    <update id="setDefault">
+        update t_address set is_default = 1 where uid=#{uid} and aid=#{aid};
+    </update>
+
+    <delete id="delete">
+        delete from t_address where aid=#{aid}
+    </delete>
+
+    <select id="findMaxAid" resultType="com.lyc.domain.Address">
+        select * from t_address where uid=#{uid} order by aid DESC limit 0,1
+    </select>
+</mapper>

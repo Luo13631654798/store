@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lyc.mapper.CartMapper">
+    <insert id="insert" parameterType="com.lyc.domain.Cart">
+        insert into t_cart  values (#{cid},#{uid},#{pid},#{price},#{num});
+    </insert>
+
+    <update id="updateNumByCid">
+        update t_cart set num = #{num} where cid=#{cid};
+    </update>
+
+    <select id="findByUidAndPid" resultType="com.lyc.domain.Cart">
+        select * from t_cart where uid=#{uid} and pid=#{pid} and num>0;
+    </select>
+
+    <select id="findByUid" resultType="com.lyc.domain.VO.CartVO">
+        select
+            cid,
+            uid,
+            pid,
+            t_cart.price,
+            t_cart.num,
+            t_product.title,
+            t_product.price AS realPrice,
+            t_product.image
+        from
+            t_cart left join  t_product on t_cart.pid=t_product.id
+        where
+            t_cart.uid = #{uid} and t_cart.num>0 and t_product.num>0
+        order by
+            t_cart.cid DESC
+    </select>
+
+    <select id="findVOByCid" resultType="com.lyc.domain.VO.CartVO">
+        select
+            cid,
+            uid,
+            pid,
+            t_cart.price,
+            t_cart.num,
+            t_product.title,
+            t_product.price AS realPrice,
+            t_product.image
+        from
+            t_cart left join  t_product on t_cart.pid=t_product.id
+        where
+            cid in (
+            <foreach collection="array" item="cid" separator=",">
+                #{cid}
+            </foreach>
+            )
+        order by
+            t_cart.cid DESC
+    </select>
+
+    <select id="findByCid" resultType="com.lyc.domain.Cart">
+        select * from t_cart where cid=#{cid}
+    </select>
+
+    <delete id="deleteByCid">
+        delete from t_cart where cid=#{cid}
+    </delete>
+</mapper>

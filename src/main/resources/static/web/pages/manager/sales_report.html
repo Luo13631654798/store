@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>销售报表</title>
+<link type="text/css" rel="stylesheet" href="../../static/css/style.css" >
+<script src="../../../bootstrap3/jquery-1.9.1.min.js"></script>
+<script type="text/javascript">
+	$.getUrlParam = function (name) {
+		let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+		let r = window.location.search.substr(1).match(reg);
+		if (r != null) return decodeURI(r[2]); return null;
+	}
+
+
+	let totalPrice = 0;
+	$(function () {
+		$("#time").change(function () {
+			location.href = "sales_report.html?categoryId="+$.getUrlParam("categoryId")+"&category="+$.getUrlParam("category")+"&time="+$("#time option:selected").val();
+		})
+		let t = $.getUrlParam("time");
+		if (t==7){
+			$("#time option[value=7]").prop("selected",true);
+		}else if (t==30){
+			$("#time option[value=30]").prop("selected",true);
+		}else if (t==120){
+			$("#time option[value=120]").prop("selected",true);
+		}else if (t==365){
+			$("#time option[value=365]").prop("selected",true);
+		}
+		$("#category_name").html($.getUrlParam("category"));
+		$.ajax({
+			url:"/order/getSalesReport",
+			type:"GET",
+			dataType:"JSON",
+			data:"cid="+$.getUrlParam("categoryId")+"&time="+$.getUrlParam("time"),
+			success:function (json) {
+				let list = json.data;
+				for (let i = 0; i < list.length; i++) {
+					let tr = "\t\t\t<tr>\n" +
+							"\t\t\t\t<td>#{title}</td>\n" +
+							"\t\t\t\t<td>#{sales}</td>\n" +
+							"\t\t\t\t<td>#{price}</td>\n" +
+							"\t\t\t\t<td>#{total}</td>\n" +
+							"\t\t\t</tr>\t"
+					tr = tr.replace(/#{title}/g,list[i].title).replace(/#{sales}/g,list[i].sales).replace(/#{price}/g,list[i].price).replace(/#{total}/g,list[i].total);
+					totalPrice+=list[i].total;
+					$("#product_list").append(tr);
+				}
+				$("#totalPrice").text(totalPrice);
+			}
+		})
+	})
+</script>
+</head>
+<body>
+	
+	<div id="header">
+			<img class="logo_img" alt="" src="../../static/img/logo.gif" >
+			<span class="wel_word">销售报表</span>
+			<div>
+				<a href="../../index.html">返回商城</a>
+				<a href="seller_manage.html">返回上一级</a>
+			</div>
+	</div>
+	
+	<div id="main">
+		<h2  style="text-align: center">
+			【<label id="category_name"></label>】类商品
+			<select id="time">
+				<option value="7" label="一周内"></option>
+				<option value="30" label="一月内"></option>
+				<option value="120" label="一季度内"></option>
+				<option value="365" label="一年内"></option>
+			</select>
+			总销售额：
+			<label id="totalPrice"></label>
+		</h2>
+
+		<table id="product_list">
+			<tr>
+				<td>商品名称</td>
+				<td>单价</td>
+				<td>销量</td>
+				<td>小计</td>
+			</tr>
+		</table>
+	</div>
+	
+	<div id="bottom">
+		<span>
+
+		</span>
+	</div>
+</body>
+</html>

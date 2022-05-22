@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>销售异常</title>
+<link type="text/css" rel="stylesheet" href="../../static/css/style.css" >
+<script src="../../../bootstrap3/jquery-1.9.1.min.js"></script>
+<script type="text/javascript">
+	$.getUrlParam = function (name) {
+		let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+		let r = window.location.search.substr(1).match(reg);
+		if (r != null) return decodeURI(r[2]); return null;
+	}
+
+
+	let totalPrice = 0;
+	$(function () {
+		$.ajax({
+			url:"/product/getException",
+			type:"GET",
+			dataType:"JSON",
+			success:function (json) {
+				let list = json.data;
+				for (let i = 0; i < list.length; i++) {
+					let tr = "\t\t\t<tr>\n" +
+							"\t\t\t\t<td>#{uid}</td>\n" +
+							"\t\t\t\t<td>#{pid}</td>\n" +
+							"\t\t\t\t<td>#{exception}</td>\n" +
+							"\t\t\t\t<td>#{time}</td>\n" +
+							"\t\t\t</tr>\t"
+					tr = tr.replace(/#{uid}/g,list[i].uid).replace(/#{pid}/g,list[i].pid).replace(/#{exception}/g,list[i].exception).replace(/#{time}/g,list[i].time);
+					totalPrice+=list[i].total;
+					$("#product_list").append(tr);
+				}
+			}
+		})
+	})
+</script>
+</head>
+<body>
+	
+	<div id="header">
+			<img class="logo_img" alt="" src="../../static/img/logo.gif" >
+			<span class="wel_word">销售异常</span>
+			<div>
+				<a href="../../index.html">返回商城</a>
+				<a href="seller_manage.html">返回上一级</a>
+			</div>
+	</div>
+	
+	<div id="main">
+
+		<table id="product_list">
+			<tr>
+				<td>用户id</td>
+				<td>商品id</td>
+				<td>异常信息</td>
+				<td>时间</td>
+			</tr>
+		</table>
+	</div>
+	
+	<div id="bottom">
+		<span>
+
+		</span>
+	</div>
+</body>
+</html>

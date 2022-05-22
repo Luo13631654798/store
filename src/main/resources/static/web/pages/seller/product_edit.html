@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>编辑商品</title>
+<link type="text/css" rel="stylesheet" href="../../static/css/style.css" >
+	<script src="../../../bootstrap3/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript">
+		$.getUrlParam = function (name) {
+			let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+			let r = window.location.search.substr(1).match(reg);
+			if (r != null) return decodeURI(r[2]); return null;
+		}
+		$(function () {
+
+			let name = $("#name").val($.getUrlParam("name"));
+			let price = $("#price").val($.getUrlParam("price"));
+			let num = $("#num").val($.getUrlParam("num"));
+
+			if (name==null||price==null||num==null){
+				alert("属性不能为空！");
+			}
+
+			$("#submit").click(function () {
+				// alert($("#addform").serialize()+"&categoryId="+$.getUrlParam("categoryId"));
+				if ($.getUrlParam("name")==null){
+					$.ajax({
+						url:"/product/insert",
+						type:"POST",
+						dataType:"JSON",
+						data:$("#addform").serialize()+"&cid="+$.getUrlParam("categoryId"),
+						success:function (json) {
+							if (json.status==200){
+								alert("添加成功！");
+								history.go(-1);
+							}
+							else {
+								alert("添加失败！");
+							}
+						},
+						error:function (xhr) {
+							alert("产生未知错误！"+xhr.message);
+						}
+					})
+				}else {
+					$.ajax({
+						url:"/product/update",
+						type:"POST",
+						dataType:"JSON",
+						data:$("#addform").serialize()+"&cid="+$.getUrlParam("cid")+"&cids="+$.getUrlParam("cids"),
+						success:function (json) {
+							if (json.status==200){
+								alert("修改成功！	若数据未更新，请刷新页面！");
+								history.go(-1);
+							}
+							else {
+								alert("修改失败！");
+							}
+						},
+						error:function (xhr) {
+							alert("产生未知错误！"+xhr.message);
+						}
+					})
+				}
+
+			})
+		})
+	</script>
+<style type="text/css">
+	h1 {
+		text-align: center;
+		margin-top: 200px;
+	}
+	
+	h1 a {
+		color: #ff0000;
+	}
+	
+	input {
+		text-align: center;
+	}
+</style>
+</head>
+<body>
+		<div id="header">
+			<img class="logo_img" alt="" src="../../static/img/logo.gif" >
+			<span class="wel_word">编辑商品</span>
+			<div>
+				<a href="../../index.html">返回商城</a>
+				<a href="seller_catagory.html">返回上一级</a>
+
+			</div>
+		</div>
+		
+		<div id="main">
+			<form id="addform">
+				<table>
+					<tr>
+						<td>名称</td>
+						<td>价格</td>
+						<td>库存</td>
+						<td colspan="2">操作</td>
+					</tr>		
+					<tr>
+						<td><input id="name" name="title" type="text"/></td>
+						<td><input id="price" name="price" type="text"/></td>
+						<td><input id="num" name="num" type="text"/></td>
+						<td><input id="submit" type="button" value="提交"/></td>
+					</tr>	
+				</table>
+			</form>
+			
+	
+		</div>
+		
+</body>
+</html>

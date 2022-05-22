@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>商品管理</title>
+<link type="text/css" rel="stylesheet" href="../../static/css/style.css" >
+<script src="../../../bootstrap3/jquery-1.9.1.min.js"></script>
+<script type="text/javascript">
+	$.getUrlParam = function (name) {
+		let reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+		let r = window.location.search.substr(1).match(reg);
+		if (r != null) return decodeURI(r[2]); return null;
+	}
+
+	function delproduct(pid){
+		if (confirm("确认删除此条数据吗？")){
+			$.ajax({
+				url:"/product/deleteByPid",
+				type:"GET",
+				dataType:"JSON",
+				data:'pid='+pid,
+				success:function (json) {
+					if (json.status==200){
+						alert("删除成功！");
+						history.go(0);
+					}
+					else {
+						alert("删除失败！");
+					}
+				}
+			})
+		}
+
+	}
+	$(function () {
+		$.ajax({
+			url:"/product/findByCategoryId",
+			type:"GET",
+			dataType:"JSON",
+			data:location.search.substr(1),
+			success:function (json) {
+				let list = json.data;
+				$("#category_name").html("【"+$.getUrlParam("category")+"】商品");
+
+				$("#addhref").attr("href","product_edit.html?categoryId="+$.getUrlParam("categoryId"));
+
+				for (let i = 0; i < list.length; i++) {
+					let tr = "\t\t\t<tr>\n" +
+							"\t\t\t\t<td>#{id}</td>\n" +
+							"\t\t\t\t<td>#{name}</td>\n" +
+							"\t\t\t\t<td>￥#{price}</td>\n" +
+							"\t\t\t\t<td>#{num}</td>\n" +
+							"\t\t\t\t<td><a href=\"product_edit.html?cid=#{id}&num=#{num}&name=#{name}&price=#{price}&cids=#{cids}\">修改</button></td>\n" +
+							"\t\t\t\t<td><a href='#' onclick='delproduct(#{id})'>删除</a></td>\n" +
+							"\t\t\t</tr>\t"
+					tr = tr.replace(/#{id}/g,list[i].id).replace(/#{name}/g,list[i].title).replace(/#{price}/g,list[i].price).replace(/#{num}/g,list[i].num);
+					tr = tr.replace(/#{cids}/g,$.getUrlParam("categoryId"))
+					$("#product_list").append(tr);
+				}
+			}
+		})
+	})
+</script>
+</head>
+<body>
+	
+	<div id="header">
+			<img class="logo_img" alt="" src="../../static/img/logo.gif" >
+			<span class="wel_word" id="category_name">商品管理系统</span>
+			<div>
+				<a id="addhref" href="#">添加商品</a>
+				<a href="../../index.html">返回商城</a>
+				<a href="seller_catagory.html">返回上一级</a>
+
+			</div>
+	</div>
+	
+	<div id="main">
+		<table id="product_list">
+			<tr>
+				<td>商品id</td>
+				<td>名称</td>
+				<td>价格</td>
+				<td>库存</td>
+				<td colspan="2">操作</td>
+			</tr>		
+
+
+		</table>
+	</div>
+	
+	<div id="bottom">
+		<span>
+
+		</span>
+	</div>
+</body>
+</html>

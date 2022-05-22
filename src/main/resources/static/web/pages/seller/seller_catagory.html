@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title >销售员信息</title>
+    <link type="text/css" rel="stylesheet" href="../../static/css/style.css" >
+    <style type="text/css">
+        h1 {
+            text-align: center;
+            margin-top: 200px;
+        }
+
+        h1 a {
+            color:red;
+        }
+
+        input {
+            text-align: center;
+        }
+    </style>
+    <script src="../../../bootstrap3/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $.getUrlParam = function (name) {
+                var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+                var r = window.location.search.substr(1).match(reg);
+                if (r != null) return unescape(r[2]); return null;
+            }
+            let username;
+            let id;
+
+            $.ajax({
+                url:"/user/getUserFromSession",
+                type:"GET",
+                dataType:"JSON",
+                success:function (json) {
+                    username = json.data.username;
+                    id = json.data.id;
+                    $("#title").html("销售员【"+username+"】信息")
+                    $.ajax({
+                        url:"/product/getProductCategoryBySellerid",
+                        data:"id="+id,
+                        type: "GET",
+                        dataType: "JSON",
+                        success:function (json) {
+                            let list = json.data;
+                            for (let i=0;i<list.length;i++){
+                                let html = "            <tr>\n" +
+                                    "                <td>#{id}</td>\n" +
+                                    "                <td>#{username}</td>\n" +
+                                    "                <td>#{category}</td>\n" +
+                                    "                <td><a href='product_manager.html?categoryId=#{id}&category=#{category}'>查看商品</a></td>\n" +
+                                    "                <td><a href='product_log.html?categoryId=#{id}&flag=0'>查看浏览日志</a></td>\n" +
+                                    "                <td><a href='product_log.html?categoryId=#{id}&flag=1'>查看销售日志</a></td>\n" +
+                                    "                <td><a href='sales_report.html?categoryId=#{id}&category=#{category}&time=7'>查看销售报表</a></td>\n" +
+                                    "                <td><a class='delete' href=''>删除</a></td>\n" +
+                                    "            </tr>"
+                                html = html.replace(/#{username}/g,username).replace(/#{category}/g,list[i].category_name).replace(/#{id}/g,list[i].id);
+
+                                $("#productCategory").append(html);
+
+
+                            }
+                            $("#productCategory").append("<td></td>    <td></td>  <td><select id='select'></select></td><td><a class='add' href=''>添加管理商品类</a></td>\n");
+                            $.ajax({
+                                url:"/product/findNullSellerProductCategory",
+                                type: "GET",
+                                dataType: "JSON",
+                                success:function (json) {
+                                    let list = json.data;
+                                    for (let i=0;i<list.length;i++){
+                                        let html = "        <option value=\"#{String}\">#{String}</option>\n"
+                                        html = html.replace("#{String}",list[i]).replace("#{String}",list[i]);
+                                        $("#select").append(html);
+                                    }
+
+                                }
+                            })
+                            $("a.delete").click(function () {
+                                if (confirm("确认移除【"+$(this).parent().parent().find("td:first").next().text()+"】对【"+$(this).parent().parent().find("td:first").next().next().text()+"】的管理权吗？")){
+                                    // alert($(this).parent().parent().find("td:first").text());
+                                    $.ajax({
+                                        url:"/product/deleteProductCategorySeller",
+                                        data:"id="+$(this).parent().parent().find("td:first").text(),
+                                        type: "POST",
+                                        dataType: "JSON",
+                                        success:function () {
+
+                                            // alert("成功移除【\"+$(this).parent().parent().find(\"td:first\").text()+\"】对【\"+$(this).parent().parent().find(\"td:first\").next().text()+\"】的管理权\"");
+                                        },
+                                        error:function () {
+                                            alert("失败");
+                                        }
+                                    });
+                                    alert("操作成功");
+                                }
+                            })
+
+
+                            $("a.add").click(function () {
+
+                                $.ajax({
+                                    url:"/product/addProductCategorySeller",
+                                    data:"pName="+$("#select option:selected").val()+"&sid="+id,
+                                    type: "GET",
+                                    dataType: "JSON",
+                                })
+                                alert("成功添加【"+username+"】对【"+$("#select option:selected").val()+"的管理权");
+                            })
+
+
+                        }
+                    })
+                }
+            })
+
+
+
+        })
+    </script>
+</head>
+<body>
+<div id="header">
+    <img class="logo_img" alt="" src="../../static/img/logo.gif" >
+    <span class="wel_word" id="title">销售员信息</span>
+
+    <div>
+        <a href="../../index.html">返回商城</a>
+    </div>
+</div>
+
+<div id="main">
+
+    <form>
+        <table id="productCategory">
+            <tr>
+                <td>商品类别id</td>
+                <td>销售员</td>
+                <td>商品类别</td>
+                <td colspan="2">操作</td>
+            </tr>
+
+        </table>
+    </form>
+
+
+</div>
+
+</body>
+</html>
